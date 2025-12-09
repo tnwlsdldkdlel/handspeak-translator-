@@ -1,0 +1,91 @@
+.app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.app-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.app-header p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.camera-view {
+  flex: 0 0 65%;
+  background-color: #000;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  color: #fff;
+}
+
+.result-panel {
+  flex: 0 0 35%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.result-text {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  min-height: 300px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.control-buttons button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.control-buttons button:hover {
+  background-color: #f0f0f0;
+}
+
+.control-buttons button:active {
+  background-color: #e0e0e0;
+}
+

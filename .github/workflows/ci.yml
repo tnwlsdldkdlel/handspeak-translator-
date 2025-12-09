@@ -1,0 +1,80 @@
+name: CI - 코드 체크 및 빌드
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  코드-체크:
+    name: 린트 및 타입 체크
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+      
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: 의존성 설치
+        run: npm ci
+      
+      - name: ESLint 실행
+        run: npm run lint
+      
+      - name: TypeScript 타입 체크
+        run: npx tsc --noEmit
+
+  빌드:
+    name: 빌드 테스트
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+      
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: 의존성 설치
+        run: npm ci
+      
+      - name: 프로젝트 빌드
+        run: npm run build
+      
+      - name: 빌드 결과물 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  보안-스캔:
+    name: 보안 취약점 스캔
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+      
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: 의존성 설치
+        run: npm ci
+      
+      - name: 보안 감사 실행
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
