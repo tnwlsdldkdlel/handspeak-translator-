@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  코드-체크:
+  code-check:
     name: 린트 및 타입 체크
     runs-on: ubuntu-latest
     
@@ -30,7 +30,7 @@ jobs:
       - name: TypeScript 타입 체크
         run: npx tsc --noEmit
 
-  빌드:
+  build:
     name: 빌드 테스트
     runs-on: ubuntu-latest
     
@@ -57,7 +57,7 @@ jobs:
           path: dist
           retention-days: 7
 
-  보안-스캔:
+  security-scan:
     name: 보안 취약점 스캔
     runs-on: ubuntu-latest
     
