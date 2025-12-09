@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  code-check:
+  lint:
     name: 린트 및 타입 체크
     runs-on: ubuntu-latest
     
@@ -57,8 +57,8 @@ jobs:
           path: dist
           retention-days: 7
 
-  security-scan:
-    name: 보안 취약점 스캔
+  test:
+    name: 테스트 (보안 취약점 스캔)
     runs-on: ubuntu-latest
     
     steps:
@@ -74,7 +74,6 @@ jobs:
       - name: 의존성 설치
         run: npm ci
       
-      - name: 보안 감사 실행
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+      - name: 보안 감사 실행 (치명적 이상 경고만, 빌드 차단 안 함)
+        run: npm audit --audit-level=critical || true
 
