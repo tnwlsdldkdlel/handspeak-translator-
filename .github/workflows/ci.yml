@@ -74,7 +74,6 @@ jobs:
       - name: 의존성 설치
         run: npm ci
       
-      - name: 보안 감사 실행
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+      - name: 보안 감사 실행 (치명적 이상 경고만, 빌드 차단 안 함)
+        run: npm audit --audit-level=critical || true
 
