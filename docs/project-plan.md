@@ -17,13 +17,13 @@
 ### Phase 2: 모델/파이프라인 통합 (Core)
 **목표**: MediaPipe 손 랜드마크 + TF.js 추론 파이프라인 완성
 - [x] MediaPipe Hands 연동, 랜드마크 정규화(0~1), 스케일 검증
-  - [ ] 비디오 캡처 루프 rAF 최적화, 해상도/프레임 옵션 노출
+  - [x] 비디오 캡처 루프 rAF 최적화, 해상도/프레임 옵션 노출
 - [x] TF.js MLP 모델 로드 및 추론 지연 측정(목표 ≤ 30ms)
 
 ### Phase 3: 안정화 로직 (Stabilization)
 **목표**: 신뢰도 기반 확정 로직으로 오인식 최소화
 - [x] 신뢰도 임계값 + 500~800ms 연속 검증 적용
-  - [ ] FPS/지연 로그 수집(콘솔 또는 DevTools Performance)
+  - [x] FPS/지연 로그 수집(콘솔 또는 DevTools Performance)
 
 ### Phase 4: 기능 완성 (Feature)
 **목표**: PRD 기능 요구 충족
