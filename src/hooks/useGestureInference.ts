@@ -18,7 +18,10 @@ interface UseGestureInferenceResult {
 }
 
 // base 경로를 포함해 정적 모델을 로드 (캐시 버전 쿼리 포함)
-const MODEL_URL = `${(import.meta as unknown as { env: { BASE_URL?: string } }).env.BASE_URL ?? '/'}model/model.json?v=2`
+// Vite의 내장 BASE_URL 사용 (기본값: '/')
+const BASE_URL = (import.meta.env.BASE_URL as string) || '/'
+const MODEL_URL = `${BASE_URL}model/model.json?v=8`
+const WEIGHTS_PREFIX = `${BASE_URL}model/`
 
 /**
  * TF.js MLP 모델을 사용해 손 랜드마크를 분류하는 훅
@@ -36,11 +39,14 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
     async function loadModel() {
       setStatus('loading')
       try {
-        const loaded = await tf.loadLayersModel(
-          tf.io.http(MODEL_URL, {
-            requestInit: { cache: 'no-store' },
-          }),
-        )
+        // 표준 TF.js 로더 사용 (가중치 경로는 weightPathPrefix로 지정)
+        const httpHandler = tf.io.browserHTTPRequest(MODEL_URL, {
+          weightPathPrefix: WEIGHTS_PREFIX,
+          requestInit: { cache: 'no-store' },
+        })
+
+        const loaded = await tf.loadLayersModel(httpHandler)
+        
         if (cancelled) return
         setModel(loaded)
         setStatus('ready')
@@ -104,4 +110,3 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
 
   return { prediction, status, error, inferenceMs }
 }
-
