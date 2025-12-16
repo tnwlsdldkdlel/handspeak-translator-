@@ -17,8 +17,8 @@ interface UseGestureInferenceResult {
   inferenceMs: number | null
 }
 
-// 캐시된 구버전 모델을 피하기 위해 버전 쿼리 추가
-const MODEL_URL = '/model/model.json?v=1'
+// base 경로를 포함해 정적 모델을 로드 (캐시 버전 쿼리 포함)
+const MODEL_URL = `${(import.meta as unknown as { env: { BASE_URL?: string } }).env.BASE_URL ?? '/'}model/model.json?v=1`
 
 /**
  * TF.js MLP 모델을 사용해 손 랜드마크를 분류하는 훅
