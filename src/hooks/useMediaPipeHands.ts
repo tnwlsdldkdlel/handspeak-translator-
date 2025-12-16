@@ -11,21 +11,30 @@ interface UseMediaPipeHandsResult {
   landmarks: HandLandmarks | null
   status: StreamStatus
   error: string | null
+  frameTimestamp: number | null
 }
 
 /**
  * MediaPipe Hands를 초기화하고 실시간 랜드마크를 제공하는 훅
  */
-export function useMediaPipeHands(): UseMediaPipeHandsResult {
+export interface MediaPipeOptions {
+  width?: number
+  height?: number
+  processEvery?: number
+}
+
+export function useMediaPipeHands(options?: MediaPipeOptions): UseMediaPipeHandsResult {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [landmarks, setLandmarks] = useState<HandLandmarks | null>(null)
   const [status, setStatus] = useState<StreamStatus>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [frameTimestamp, setFrameTimestamp] = useState<number | null>(null)
 
   useEffect(() => {
     let hands: Hands | null = null
     let camera: Camera | null = null
     let stopped = false
+    const frameCount = { current: 0 }
 
     async function setup() {
       if (!videoRef.current) return
@@ -45,9 +54,12 @@ export function useMediaPipeHands(): UseMediaPipeHandsResult {
 
       hands.onResults((results: Results) => {
         if (stopped) return
+        frameCount.current += 1
+        const processEvery = options?.processEvery ?? 1
+        if (frameCount.current % processEvery !== 0) return
+
         const firstHand = results.multiHandLandmarks?.[0]
         if (firstHand) {
-          // MediaPipe Landmark -> 간단한 타입으로 변환
           const mapped: HandLandmarks = firstHand.map((p) => ({
             x: p.x,
             y: p.y,
@@ -57,6 +69,7 @@ export function useMediaPipeHands(): UseMediaPipeHandsResult {
         } else {
           setLandmarks(null)
         }
+        setFrameTimestamp(performance.now())
       })
 
       camera = new Camera(videoRef.current, {
@@ -64,8 +77,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsResult {
           if (!hands || !videoRef.current) return
           await hands.send({ image: videoRef.current })
         },
-        width: 640,
-        height: 480,
+        width: options?.width ?? 640,
+        height: options?.height ?? 480,
       })
 
       await camera.start()
@@ -86,8 +99,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsResult {
       camera?.stop()
       hands?.close()
     }
-  }, [])
+  }, [options?.width, options?.height, options?.processEvery])
 
-  return { videoRef, landmarks, status, error }
+  return { videoRef, landmarks, status, error, frameTimestamp }
 }
 

@@ -14,6 +14,7 @@ interface UseGestureInferenceResult {
   prediction: Prediction | null
   status: InferenceStatus
   error: string | null
+  inferenceMs: number | null
 }
 
 const MODEL_URL = '/model/model.json'
@@ -26,6 +27,7 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
   const [model, setModel] = useState<tf.LayersModel | null>(null)
   const [status, setStatus] = useState<InferenceStatus>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [inferenceMs, setInferenceMs] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +60,7 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
     if (!model) return null
     if (!landmarks) return null
 
+    const start = performance.now()
     // 랜드마크를 [x1, y1, z1, ..., x21, y21, z21] 형태로 평탄화
     const flat = landmarks.flatMap((p) => [p.x, p.y, p.z])
     const input = tf.tensor([flat])
@@ -78,6 +81,7 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
         return null
       }
 
+      setInferenceMs(performance.now() - start)
       return { gestureId, confidence }
     } catch (err) {
       setError(
@@ -93,6 +97,6 @@ export function useGestureInference(landmarks: HandLandmarks | null): UseGesture
     }
   }, [landmarks, model])
 
-  return { prediction, status, error }
+  return { prediction, status, error, inferenceMs }
 }
 
