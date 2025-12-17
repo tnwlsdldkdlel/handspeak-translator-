@@ -53,6 +53,16 @@
   border-radius: 8px;
 }
 
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
 .status-badge {
   position: absolute;
   left: 1rem;
@@ -72,6 +82,11 @@
   color: #d8d8d8;
 }
 
+.overlay-status {
+  font-size: 0.8rem;
+  color: #90e3ff;
+}
+
 .options-row {
   position: absolute;
   right: 1rem;
@@ -89,6 +104,17 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.85rem;
+}
+
+.overlay-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overlay-toggle input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
 }
 
 .options-row select {

@@ -9,9 +9,13 @@ function App() {
   const [videoWidth, setVideoWidth] = useState(640)
   const [videoHeight, setVideoHeight] = useState(480)
   const [processEvery, setProcessEvery] = useState(1)
+  const [showOverlay, setShowOverlay] = useState(true)
+
   const { videoRef, landmarks, status: streamStatus, error: streamError, frameTimestamp } =
     useMediaPipeHands({ width: videoWidth, height: videoHeight, processEvery })
   const { prediction, status: inferenceStatus, error: inferenceError, inferenceMs } = useGestureInference(landmarks)
+
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
   const [tokens, setTokens] = useState<RecognizedToken[]>([])
   const nextId = useRef(1)
@@ -90,6 +94,43 @@ function App() {
     return `${fpsText} · ${inferText}`
   }, [fps, inferenceMs])
 
+  const overlayStatusText = useMemo(
+    () => (showOverlay ? '오버레이: 켜짐' : '오버레이: 꺼짐'),
+    [showOverlay],
+  )
+
+  // 랜드마크 오버레이 캔버스 그리기
+  useEffect(() => {
+    const canvas = overlayCanvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const { width, height } = canvas
+    ctx.clearRect(0, 0, width, height)
+
+    if (!showOverlay) return
+    if (!landmarks || landmarks.length === 0) return
+
+    ctx.save()
+    ctx.fillStyle = '#00ff88'
+    ctx.strokeStyle = '#00ff88'
+    ctx.lineWidth = 2
+
+    // 간단히 포인트만 그린다 (연결선 필요 시 MediaPipe Hands connections를 추가로 사용할 수 있음)
+    for (const point of landmarks) {
+      const x = point.x * width
+      const y = point.y * height
+      const radius = 4
+      ctx.beginPath()
+      ctx.arc(x, y, radius, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    ctx.restore()
+  }, [landmarks, showOverlay])
+
   const handleResolutionChange = (value: string) => {
     const [w, h] = value.split('x').map((v) => Number(v))
     if (!Number.isNaN(w) && !Number.isNaN(h)) {
@@ -113,10 +154,25 @@ function App() {
       </header>
       <main className="app-main">
         <div className="camera-view">
-          <video ref={videoRef} className="camera-video" autoPlay playsInline muted />
+          <video
+            ref={videoRef}
+            className="camera-video"
+            autoPlay
+            playsInline
+            muted
+            width={videoWidth}
+            height={videoHeight}
+          />
+          <canvas
+            ref={overlayCanvasRef}
+            className="camera-overlay"
+            width={videoWidth}
+            height={videoHeight}
+          />
           <div className="status-badge">
             <div>{statusMessage}</div>
             <div className="metrics">{metricsText}</div>
+            <div className="overlay-status">{overlayStatusText}</div>
           </div>
           <div className="options-row">
             <label>
@@ -136,6 +192,14 @@ function App() {
                 <option value={2}>2프레임마다</option>
                 <option value={3}>3프레임마다</option>
               </select>
+            </label>
+            <label className="overlay-toggle">
+              랜드마크 오버레이
+              <input
+                type="checkbox"
+                checked={showOverlay}
+                onChange={(e) => setShowOverlay(e.target.checked)}
+              />
             </label>
           </div>
         </div>

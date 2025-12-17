@@ -187,3 +187,47 @@ git push origin <branch-name>
 3. 관련 이슈가 있다면 이슈 번호를 참조합니다
 4. CI가 통과해야만 머지할 수 있습니다
 
+## 프론트엔드 개발자가 이 프로젝트에서 꼭 알아야 할 기술 (우선순위)
+
+### 1순위 (최우선 – 바로 써먹는 것들)
+
+- **TypeScript 기본기**
+  - `type`, `interface`, 제네릭, 유니온/인터섹션 타입
+  - `strict` 모드에서의 타입 에러 읽고 고치기
+- **React + Hooks**
+  - 함수형 컴포넌트, `useState`, `useEffect`, `useMemo`, `useRef`
+  - 부모 → 자식 props 흐름, 상태 끌어올리기(lifting state)
+- **Vite + npm 스크립트**
+  - `npm run dev`, `npm run build`, `npm run lint` 동작 이해
+  - `import.meta.env.BASE_URL` 개념과 정적 파일(`/public`) 서빙 방식
+- **ESLint / @typescript-eslint**
+  - 린트 에러 메세지 읽고, 규칙에 맞게 고치는 방법
+  - `eslint.config.js` 구조와 `devDependencies`(eslint, ts-eslint 등) 역할
+- **Git & GitHub 워크플로우**
+  - 브랜치 전략(`main`, `feat/*`, `fix/*`)과 PR 생성/리뷰/머지 흐름
+  - 이 문서에 정의된 커밋 메시지 규칙 준수
+
+### 2순위 (프로젝트 특화 – 잘 알수록 디버깅이 쉬움)
+
+- **TensorFlow.js 기초**
+  - `tf.loadLayersModel`, `tf.tensor`, `tensor.dispose()` 사용법
+  - 레이어드 모델(Sequential) 개념과 출력(softmax) 이해
+- **MediaPipe Hands 파이프라인**
+  - `@mediapipe/hands`, `@mediapipe/camera_utils`가 어떻게 웹캠 프레임을 처리하는지
+  - 랜드마크 좌표 구조(21개 포인트, `x/y/z`)와 FPS 개념
+- **실시간 UI 성능 최적화**
+  - 불필요한 리렌더 줄이기(`useMemo`, `useCallback` 활용)
+  - 비디오/캔버스 영역과 텍스트 영역의 책임 분리
+
+### 3순위 (있으면 좋은 것들 – 중장기적으로 유용)
+
+- **머신러닝 파이프라인 이해(개념 레벨)**
+  - Keras → TF.js 변환 흐름, `model.json` + `.bin` 구조
+  - 입력 특성(shape 63 = 21 포인트 × x/y/z)과 출력 클래스(숫자 1~5) 매핑
+- **테스트 및 품질 관리**
+  - 단위 테스트/스냅샷 테스트로 핵심 로직 검증하는 패턴
+  - Lighthouse 등으로 성능/접근성 점검하는 방법
+- **배포/운영 관점**
+  - 정적 호스팅 환경(예: GitHub Pages, Vercel)에서 Vite 앱이 어떻게 동작하는지
+  - 번들 사이즈 경고, 코드 스플리팅 개념
+
