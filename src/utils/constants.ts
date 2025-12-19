@@ -5,7 +5,7 @@
 // 안정화 로직 관련
 export const STABILIZATION_CONFIG = {
   /** 신뢰도 임계값 (0.0 ~ 1.0) */
-  CONFIDENCE_THRESHOLD: 0.7,
+  CONFIDENCE_THRESHOLD: 0.5,
   /** 제스처 확정을 위한 최소 지속 시간 (ms) */
   MIN_DURATION: 500,
   /** 제스처 확정을 위한 최대 지속 시간 (ms) */

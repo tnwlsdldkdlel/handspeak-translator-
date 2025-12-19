@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { useMediaPipeHands } from './hooks/useMediaPipeHands'
 import { useGestureInference } from './hooks/useGestureInference'
-import { KSL_MAPPING, RecognizedToken } from './types'
+import { GestureId, KSL_MAPPING, RecognizedToken } from './types'
 import { STABILIZATION_CONFIG } from './utils/constants'
 
 function App() {
@@ -22,27 +22,121 @@ function App() {
   const [fps, setFps] = useState<number | null>(null)
   const lastFrameRef = useRef<number | null>(null)
 
-  // 새 예측이 확정 조건을 만족할 때만 토큰에 추가
+  // 안정화 로직: 같은 제스처가 일정 시간 지속될 때만 확정
+  const pendingGestureRef = useRef<{
+    gestureId: GestureId
+    confidence: number
+    startTime: number
+  } | null>(null)
+  const stabilizationTimerRef = useRef<number | null>(null)
+
   useEffect(() => {
-    if (!prediction) return
+    // 기존 타이머 정리
+    if (stabilizationTimerRef.current) {
+      clearTimeout(stabilizationTimerRef.current)
+      stabilizationTimerRef.current = null
+    }
+
+    if (!prediction) {
+      // 예측이 없으면 대기 중인 제스처 리셋
+      pendingGestureRef.current = null
+      return
+    }
+
     const { gestureId, confidence } = prediction
-    if (confidence < STABILIZATION_CONFIG.CONFIDENCE_THRESHOLD) return
+    if (confidence < STABILIZATION_CONFIG.CONFIDENCE_THRESHOLD) {
+      // 신뢰도가 낮으면 대기 중인 제스처 리셋
+      pendingGestureRef.current = null
+      return
+    }
 
-    setTokens((prev) => {
-      const last = prev[prev.length - 1]
-      if (last?.gestureId === gestureId) return prev
+    const now = performance.now()
 
-      const id = nextId.current++
-      return [
-        ...prev,
-        {
-          id,
-          gestureId,
-          text: KSL_MAPPING[gestureId],
-          confidence,
-        },
-      ]
-    })
+    // 같은 제스처가 계속 감지되는 경우
+    if (pendingGestureRef.current?.gestureId === gestureId) {
+      const elapsed = now - pendingGestureRef.current.startTime
+
+      // 최소 지속 시간(500ms) 이상 지속되면 확정
+      if (elapsed >= STABILIZATION_CONFIG.MIN_DURATION) {
+        // 이미 토큰에 추가되었는지 확인
+        setTokens((prev) => {
+          const last = prev[prev.length - 1]
+          if (last?.gestureId === gestureId) return prev
+
+          const id = nextId.current++
+          return [
+            ...prev,
+            {
+              id,
+              gestureId,
+              text: KSL_MAPPING[gestureId],
+              confidence,
+            },
+          ]
+        })
+
+        // 확정 후 리셋
+        pendingGestureRef.current = null
+      }
+      // 최대 지속 시간(800ms)을 넘으면 강제 확정 (이미 확정되었을 수도 있음)
+      else if (elapsed >= STABILIZATION_CONFIG.MAX_DURATION) {
+        setTokens((prev) => {
+          const last = prev[prev.length - 1]
+          if (last?.gestureId === gestureId) return prev
+
+          const id = nextId.current++
+          return [
+            ...prev,
+            {
+              id,
+              gestureId,
+              text: KSL_MAPPING[gestureId],
+              confidence,
+            },
+          ]
+        })
+        pendingGestureRef.current = null
+      }
+    } else {
+      // 새로운 제스처가 감지되면 시작 시간 기록
+      pendingGestureRef.current = {
+        gestureId,
+        confidence,
+        startTime: now,
+      }
+
+      // 최소 지속 시간 후 확정을 시도하는 타이머 설정
+      stabilizationTimerRef.current = window.setTimeout(() => {
+        const pending = pendingGestureRef.current
+        if (pending && pending.gestureId === gestureId) {
+          setTokens((prev) => {
+            const last = prev[prev.length - 1]
+            if (last?.gestureId === gestureId) return prev
+
+            const id = nextId.current++
+            return [
+              ...prev,
+              {
+                id,
+                gestureId,
+                text: KSL_MAPPING[gestureId],
+                confidence: pending.confidence,
+              },
+            ]
+          })
+          pendingGestureRef.current = null
+        }
+        stabilizationTimerRef.current = null
+      }, STABILIZATION_CONFIG.MIN_DURATION)
+    }
+
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (stabilizationTimerRef.current) {
+        clearTimeout(stabilizationTimerRef.current)
+        stabilizationTimerRef.current = null
+      }
+    }
   }, [prediction])
 
   const recognizedText = useMemo(
